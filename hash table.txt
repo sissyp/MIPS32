@@ -1,0 +1,333 @@
+	.text
+	.globl run
+	
+#main program
+
+run:
+	li $t0,0            #telos=0
+	la $t1,hash  
+	lw $t2,($t1)        #hash[0]=$t2
+	
+	li $t3,0            #i=0
+	lw $t4,N            #t4=N
+for:
+	bge $t3,$t4,do      #while i>=N goto do 
+	sw $0,($t1) 	    #hash[i]=0
+	addi $t1,$t1,4      #t1=next element
+	addi $t3,$t3,1      #i++
+	j for
+	
+do:
+	la $a0, str1        #prints " Menu" on screen
+	li $v0,4
+	syscall
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+
+	la $a0, str2        #prints "1.Insert Key" on screen
+	li $v0,4
+	syscall
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+	
+	la $a0, str3        #prints "2.Find Key" on screen
+	li $v0,4
+	syscall
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+	
+	la $a0, str4        #prints "3.Display Hash Table" on screen
+	li $v0,4
+	syscall
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+	
+	la $a0, str5        #prints "4.Exit" on screen
+	li $v0,4
+	syscall
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+	
+	la $a0, str6        #prints "Choice?" on screen
+	li $v0,4
+	syscall
+	
+	li $v0,5            #reads choice
+	syscall
+	
+	move $t5,$v0        #t5=choice
+
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+	
+if1:
+	bne $t5,1,if2       #if choice!=1
+	la $a0, str7        #prints "Give new key(greater than zero): " on screen
+	li $v0,4
+	syscall
+	
+	li $v0,5            #reads new key
+	syscall
+	
+	move $t6,$v0        #t6= new key
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+
+	ble $t6,0,else1     #if key<=0 goto else1
+	jal insertkey
+	j if2
+	
+else1:
+	la $a0, str8        #prints "key must be greater than zero" on screen
+	li $v0,4
+	syscall
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+	
+if2:
+	bne $t5,2,if3       #if choice!=2 goto if3
+	la $a0, str9        #prints "Give key to search for: " on screen
+	li $v0,4
+	syscall
+	
+	li $v0,5            #reads key
+	syscall
+	
+	move $t7,$v0        #t7=key
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+	
+	jal findkey
+	move $t8,$v0        #t8=pos
+	
+	bne $t8,-1,else2    #if pos!=-1 goto else2
+	la $a0, str10       #prints "Key not in hash table." on screen
+	li $v0,4
+	syscall
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+	j if3
+	
+else2:
+	la $a0, str11       #prints "Key value= " on screen
+	li $v0,4
+	syscall
+	
+	li $t2,0            #t2 points at the table
+	mul $t9,$t8,4       #t9=pos*4
+	add $t2,$t2,$t9     #increase pointer 
+	lw $s1,hash($t2)    #s1=hash[pos]
+	move $a0,$s1        #prints hash[pos]
+	li $v0,1
+	syscall
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+	
+	la $a0, str12       #prints "Table position= " on screen
+	li $v0,4
+	syscall
+
+	
+	move $a0,$t8        #prints pos
+	li $v0,1
+	syscall
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+	
+if3:
+	bne $t5,3,if4       #if choice!=3 goto if4
+	jal displaytable
+	
+if4:
+	bne $t5,4,exit1     #if choice!=4 goto exit 
+	li $t0,1
+	
+exit1:
+	bne $t0,0,exit        #if telos!=0
+	j do
+	
+exit: li $v0,10           #end of main program 
+	  syscall
+	
+#sub-program 	
+insertkey:
+	addi $sp, $sp, -4     #store the return address at the stack
+    sw $ra, 0($sp)
+	move $t7,$t6          #key=new key
+	jal findkey
+	move $t8,$v0          #returns position
+if5:
+	beq $t8,-1,else5      #if position==-1 goto else5
+	la $a0, str13         #prints "Key is alredy in hash table." on screen
+	li $v0,4
+	syscall
+	
+	la $a0, CRLF          #prints a new line on screen
+	li $v0, 4
+	syscall
+	j exit_insertkey
+	
+else5:
+	lw $s0,keys            #s0=number of keys
+	bge $s0,$t4,else6      #if (keys>=N) goto else6
+	jal hashfunction       #calls hashfunction
+	move $t8,$v0           #returns position
+	li $t2,0               #t2 points at the hash table
+	mul $t9,$t8,4          #t9=pos*4
+	add $t2,$t2,$t9        #increase pointer
+	lw $s1,hash($t2)       #s1=hash[position]
+	sw $t7,hash($t2)       #hash[position]=k
+	addi $s0,$s0,1         #keys++
+	sw $s0,keys            #store the new value of keys
+	j exit_insertkey
+	
+else6:
+	la $a0, str14      #prints "Hash table is full" on screen
+	li $v0,4
+	syscall
+	
+	la $a0, CRLF       #prints a new line on screen
+	li $v0, 4
+	syscall
+	
+exit_insertkey:	
+	lw $ra,0($sp)      #release stack
+	addi $sp,$sp,4
+	jr $ra
+	
+#sub-program	
+hashfunction:
+	rem $t8,$t7,$t4   #position=k%N
+	li $t2,0          #t2 points at the hash table
+	mul $t9,$t8,4     #t9=pos*4
+	add $t2,$t2,$t9   #increase pointer
+	lw $s1,hash($t2)  #s1=hash[pos]
+loop:	
+	beq $s1,0,return  #if (hash[position]==0) goto return
+	addi $t8,$t8,1    #position++
+	rem $t8,$t8,$t4   #position%=N
+	j loop
+return:	
+	move $v0,$t8      #return position
+	jr $ra
+	
+#sub-program	
+findkey:
+	li $s2,0   			#i=0
+	li $s3,0   			#found=0
+	rem $t8,$t7,$t4     #position=k%N
+loop1:
+	bge $s2,$t4,if8     #if (N>=i) goto if8
+	bne $s3,0,if8       #if found!=0 goto if8
+	addi $s2,$s2,1      #i++
+	
+if7:
+	li $t2,0            #t2 points at the hash table
+	mul $t9,$t8,4       #t9=pos*4
+	add $t2,$t2,$t9     #increase pointer
+	lw $s1,hash($t2)    #s1=hash[pos]
+	bne $s1,$t7,else7   #if hash[position]!=k goto else7
+	li $s3,1            #found=1
+	j if8
+	
+else7:
+	addi $t8,$t8,1      #position++
+	rem $t8,$t8,$t4     #position%=N
+	j loop1
+if8:
+	beq $s3,1,else8     #if (found!=1) goto else8
+	li $t8,-1           #position=-1
+	j exit_findkey
+	
+else8:
+exit_findkey:
+	move $v0,$t8        #return position
+	jr $ra
+	
+displaytable:
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+	
+	la $a0, str15      	#prints "pos key" on screen
+	li $v0,4
+	syscall
+	
+	la $a0, CRLF        #prints a new line on screen
+	li $v0, 4
+	syscall
+	
+	li $s4,0             #i=0
+	li $t1,0             #points at the hash table
+loop2:
+	bge $s4,$t4,exit2
+	la $a0, str16        #prints " " on screen
+	li $v0,4
+	syscall
+	move $a0,$s4         #prints i
+	li $v0,1
+	syscall
+	la $a0, str16       #prints " " on screen
+	li $v0,4
+	syscall
+	
+	lw $t2,hash($t1)     #t2=hash[i]
+	move $a0,$t2         #prints hash[i]
+	li $v0,1
+	syscall
+	addi $t1,$t1,4       #increase pointer
+	addi $s4,$s4,1       #i++
+	j loop2
+	
+exit2:
+	la $a0, CRLF          #prints a new line on screen
+	li $v0, 4
+	syscall
+	jr $ra
+	
+	.data
+	str1: .asciiz " Menu"
+	str2: .asciiz "1.Insert Key"
+	str3: .asciiz "2.Find Key"
+	str4: .asciiz "3.Display Hash Table"
+	str5: .asciiz "4.Exit"
+	str6: .asciiz "Choice?"
+	str7: .asciiz "Give new key(greater than zero): "
+	str8: .asciiz "key must be greater than zero"
+	CRLF: .asciiz "\n"
+	str9: .asciiz "Give key to search for: "
+	str10: .asciiz "Key not in hash table."
+	str11: .asciiz "Key value= "
+	str12: .asciiz "Table position= "
+	str13: .asciiz "Key is alredy in hash table."
+	str14: .asciiz "Hash table is full"
+	str15: .asciiz "pos key"
+	str16: .asciiz " "
+	N:    .word 10
+	keys: .word 0
+	hash: .space 10
+	

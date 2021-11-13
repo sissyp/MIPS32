@@ -1,0 +1,35 @@
+        .text
+		.globl main
+
+main: 
+		li $t0,0       	   #sum=0
+		la $t1,Y           #t1 points at the array
+		lw $t2,($t1)       #t2=Y[0]
+		li $t3,0           #i=0
+		lw $t4,N           #t4=N
+		
+for:
+		bge $t3,$t4,exit   #if i>=N then go to exit
+		add $t0,$t0,$t2    #sum+=Y[i]
+		addi $t1,$t1,4     #next element of the array
+		lw $t2,($t1)       #t2=Y[1]
+		addi $t3,$t3,1     #i++
+		j for 
+		
+exit: 
+		la $a0,str         #prints "sum is "
+		li $v0,4
+		syscall 
+		
+		move $a0,$t0       #prints the value of sum
+		li $v0,1 
+		syscall
+		
+		li $v0,10          #exit
+		syscall
+		
+		
+		 .data
+	str: .asciiz "sum is "
+	N:   .word 5
+	Y:   .word 1 , 2 , 3 , 4 , 5	

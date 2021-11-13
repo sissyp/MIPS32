@@ -1,0 +1,33 @@
+	.text
+	.globl main
+
+main:
+	la $t0,str          #t0 points at the str
+	lb $t1,($t0)        #t1 contains the first element of the str
+	li $t2,69           #t2 contains the ASCII value of E
+	
+loop:
+	beqz $t1,exit       #if t1='\0' go to exit
+	bne $t1,'e', not_e  #if t1!='e' go to not_e
+	sb $t2,($t0)        #replace 'e' with 'E'
+	
+not_e:
+	addi $t0,$t0,1      #t0 points o the next character of the str
+	lb $t1,($t0)        #t1 contains the next character of the str
+	j loop
+	
+exit:
+		la $a0,message       #prints "the new string is "
+		li $v0,4
+		syscall
+		      
+		la $a0,str	  
+		li $v0,4             #prints the new str
+		syscall
+		
+		li $v0,10            #exit
+		syscall
+		
+		.data
+str: .asciiz "abeebbaeeeaeeebbebaebabab"
+message: .asciiz "the new string is "

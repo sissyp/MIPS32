@@ -1,0 +1,38 @@
+	.text
+	.globl main
+
+main:
+	li $t0,0         #pointer of the string
+	lb $t3,char      #character we want to count 
+	li $t2,0         #count 
+	
+loop:
+			lb $t1,str($t0)       #t1 contains first character of the str
+			beqz $t1,exit         #if t1='\0' go to exit 
+			bne $t1,$t3,not_char  #if t1!=char go to not_char
+			addi $t2,$t2,1        #increase the count if t1==char
+not_char:	
+			addi $t0,$t0,1        #increase the pointer's value
+			j loop
+			
+exit:
+		la $a0,message            #prints "count is "
+		li $v0,4
+		syscall
+		
+		move $a0,$t2              #prints count
+		li $v0,1
+		syscall
+	
+		li $v0,10                 #exit
+		syscall
+		
+	.data
+message: .asciiz "count is "
+char: .asciiz "c"
+str: .asciiz "aaabbccccddabceeffeeghi"
+
+	
+
+	
+	

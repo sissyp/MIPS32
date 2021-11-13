@@ -1,0 +1,42 @@
+	.text
+	.globl main
+
+main:
+	la $t0,U           #t0 points at U
+	lw $t1,($t0)       #t1 contains the first element of U
+	la $t2,V           #t2 poins at V
+	lw $t3,($t2)       #t3 contains the first element of V
+	li $t4,0           #t4=p=0
+	li $t5,0           #t5=i=0
+	lw $t6,N           #t6=N
+	
+loop:
+	bge $t5,$t6,exit   #if i>=N go to exit
+	mul $t7,$t1,$t3    #U[i]*V[i]
+	add $t4,$t4,$t7    #p+=U[i]*V[i]
+	addi $t5,$t5,1     #i++
+	addi $t0,$t0,4     #t0 points at the next element of U
+	lw $t1,($t0)       #t1 contains the next element of U
+	addi $t2,$t2,4     #t2 points at the next element of V
+	lw $t3,($t2)       #t3 contains the next element of V
+	j loop
+	
+exit:
+
+	la $a0,message     #prints "p= "
+	li $v0,4
+	syscall
+	
+	move $a0,$t4       #prints p
+	li $v0,1
+	syscall
+	
+	li $v0,10          #exit
+	syscall
+	
+	.data
+message: .asciiz "p = "
+V: .word 1 , 2 , 3 , 4 , 5
+U: .word 1 , 2 , 3 , 4 , 5
+N: .word 5
+	
